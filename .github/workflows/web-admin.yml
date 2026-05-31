@@ -1,0 +1,50 @@
+name: Test & Deploy Web Admin
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'web-admin/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'web-admin/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: web-admin/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd web-admin
+          npm ci
+
+      - name: Lint
+        run: |
+          cd web-admin
+          npm run lint
+
+      - name: Type check
+        run: |
+          cd web-admin
+          npm run type-check
+
+      - name: Build
+        run: |
+          cd web-admin
+          npm run build
+
+      - name: Test
+        run: |
+          cd web-admin
+          npm run test -- --ci --coverage

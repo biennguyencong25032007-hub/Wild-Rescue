@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: wild_rescue_db_prod
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: wild_rescue
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - wild_rescue_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: wild_rescue_redis_prod
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_prod_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - wild_rescue_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: wild-rescue-backend:latest
+    container_name: wild_rescue_backend_prod
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/wild_rescue
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - wild_rescue_network
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  web-admin:
+    image: wild-rescue-web-admin:latest
+    container_name: wild_rescue_web_admin_prod
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:3000/api
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+    networks:
+      - wild_rescue_network
+    restart: always
+
+  nginx:
+    image: nginx:alpine
+    container_name: wild_rescue_nginx
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployment/nginx/ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - web-admin
+    networks:
+      - wild_rescue_network
+    restart: always
+
+volumes:
+  postgres_prod_data:
+  redis_prod_data:
+
+networks:
+  wild_rescue_network:
+    driver: bridge
