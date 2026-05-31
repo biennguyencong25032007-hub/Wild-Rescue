@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: wild_rescue_db_dev
+    environment:
+      POSTGRES_USER: wild_rescue_user
+      POSTGRES_PASSWORD: wild_rescue_password
+      POSTGRES_DB: wild_rescue_dev
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/functions.sql:/docker-entrypoint-initdb.d/02-functions.sql
+      - ./database/views.sql:/docker-entrypoint-initdb.d/03-views.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/04-seed.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - wild_rescue_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wild_rescue_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: wild_rescue_redis_dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - wild_rescue_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wild_rescue_backend_dev
+    environment:
+      DATABASE_URL: postgresql://wild_rescue_user:wild_rescue_password@postgres:5432/wild_rescue_dev
+      NODE_ENV: development
+      JWT_SECRET: dev_jwt_secret_key_change_this
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/dist
+    networks:
+      - wild_rescue_network
+    command: npm run start:dev
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  wild_rescue_network:
+    driver: bridge

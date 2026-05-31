@@ -1,0 +1,74 @@
+# AI Services Docker Compose
+
+version: '3.8'
+
+services:
+  animal-classifier:
+    build:
+      context: ./ai-services/animal-classifier
+      dockerfile: Dockerfile
+    container_name: wild_rescue_classifier
+    environment:
+      MODEL_PATH: /models/animal-classifier-model
+      API_PORT: 5001
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./ai-services/models:/models
+    networks:
+      - wild_rescue_network
+
+  species-detection:
+    build:
+      context: ./ai-services/species-detection
+      dockerfile: Dockerfile
+    container_name: wild_rescue_species_detector
+    environment:
+      MODEL_PATH: /models/species-detection-model
+      API_PORT: 5002
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./ai-services/models:/models
+    networks:
+      - wild_rescue_network
+
+  image-analysis:
+    build:
+      context: ./ai-services/image-analysis
+      dockerfile: Dockerfile
+    container_name: wild_rescue_image_analyzer
+    environment:
+      API_PORT: 5003
+    ports:
+      - "5003:5003"
+    networks:
+      - wild_rescue_network
+
+  emergency-priority:
+    build:
+      context: ./ai-services/emergency-priority
+      dockerfile: Dockerfile
+    container_name: wild_rescue_priority_engine
+    environment:
+      API_PORT: 5004
+    ports:
+      - "5004:5004"
+    networks:
+      - wild_rescue_network
+
+  recommendation-engine:
+    build:
+      context: ./ai-services/recommendation-engine
+      dockerfile: Dockerfile
+    container_name: wild_rescue_recommender
+    environment:
+      API_PORT: 5005
+    ports:
+      - "5005:5005"
+    networks:
+      - wild_rescue_network
+
+networks:
+  wild_rescue_network:
+    driver: bridge
