@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  phone     String?    @unique
+  password  String
+  fullName  String
+  avatar    String?
+  bio       String?
+  role      UserRole   @default(USER)
+  status    UserStatus @default(ACTIVE)
+  
+  // Location
+  latitude  Float?
+  longitude Float?
+  address   String?
+  
+  // Relations
+  reports    Report[]
+  rescues    Rescue[]
+  volunteer  Volunteer?
+  hospital   Hospital?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+}
+
+enum UserRole {
+  ADMIN
+  HOSPITAL_STAFF
+  VOLUNTEER
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  title     String
+  description String
+  
+  // Animal info
+  animalType String
+  species    String?
+  condition  AnimalCondition
+  
+  // Location
+  latitude  Float
+  longitude Float
+  address   String
+  
+  // Images
+  images    String[]
+  
+  // Status
+  status    ReportStatus @default(PENDING)
+  priority  Priority     @default(MEDIUM)
+  
+  // Relations
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rescue    Rescue?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+}
+
+enum AnimalCondition {
+  CRITICAL
+  INJURED
+  SICK
+  LOST
+  ABANDONED
+}
+
+enum ReportStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Rescue {
+  id        String   @id @default(cuid())
+  reportId  String   @unique
+  report    Report   @relation(fields: [reportId], references: [id])
+  
+  // Assignment
+  volunteerId String?
+  volunteer   Volunteer? @relation(fields: [volunteerId], references: [id])
+  
+  hospitalId  String?
+  hospital    Hospital? @relation(fields: [hospitalId], references: [id])
+  
+  // Timeline
+  status      RescueStatus @default(PENDING)
+  startedAt   DateTime?
+  completedAt DateTime?
+  notes       String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([volunteerId])
+  @@index([hospitalId])
+}
+
+enum RescueStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Hospital {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String   @unique
+  website   String?
+  
+  // Location
+  latitude  Float
+  longitude Float
+  address   String
+  city      String
+  
+  // Details
+  description String?
+  logo        String?
+  verified    Boolean  @default(false)
+  operatingHours String? // JSON string
+  services    String[] // Array of services
+  
+  // Relations
+  managerId String
+  manager   User     @relation(fields: [managerId], references: [id])
+  rescues   Rescue[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([managerId])
+}
+
+model Volunteer {
+  id        String   @id @default(cuid())
+  bio       String?
+  expertise String[]
+  avatar    String?
+  
+  // Ratings
+  rating    Float    @default(5.0)
+  reviews   Int      @default(0)
+  
+  // Verification
+  verified  Boolean  @default(false)
+  certifications String[]
+  
+  // Relations
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  rescues   Rescue[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  
+  // Relations
+  userId    String
+  
+  // Status
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  REPORT_CREATED
+  RESCUE_ASSIGNED
+  RESCUE_UPDATED
+  RESCUE_COMPLETED
+  URGENT_ALERT
+  SYSTEM_ALERT
+}
+
+model Upload {
+  id        String   @id @default(cuid())
+  filename  String
+  mimetype String
+  size      Int
+  url       String   @unique
+  
+  createdAt DateTime @default(now())
+}
