@@ -1,25 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
+    // private readonly _prisma: PrismaService,
+    // private readonly _jwtService: JwtService,
   ) {}
 
-  async register(registerDto: any) {
+  async register(_registerDto: any) {
     // Implementation
     return { message: 'User registered successfully' };
   }
 
-  async login(loginDto: any) {
+  async login(_loginDto: any) {
     // Implementation
     return { token: 'jwt_token', user: {} };
   }
 
-  async validateUser(email: string, password: string) {
+  async validateUser(_email: string, _password: string) {
     // Implementation
     return null;
   }

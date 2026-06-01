@@ -15,12 +15,17 @@ async function bootstrap() {
   );
 
   // Enable CORS
+  const corsOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ];
+  
+  if (process.env.FRONTEND_URL) {
+    corsOrigins.push(process.env.FRONTEND_URL);
+  }
+  
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      process.env.FRONTEND_URL,
-    ],
+    origin: corsOrigins,
     credentials: true,
   });
 

@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  // constructor(private _prisma: PrismaService) {}
 
-  create(createUserDto: any) {
+  create(_createUserDto: any) {
     // Implementation
     return { message: 'User created' };
   }
@@ -15,17 +14,17 @@ export class UsersService {
     return [];
   }
 
-  findOne(id: string) {
+  findOne(_id: string) {
     // Implementation
     return null;
   }
 
-  update(id: string, updateUserDto: any) {
+  update(_id: string, _updateUserDto: any) {
     // Implementation
     return { message: 'User updated' };
   }
 
-  remove(id: string) {
+  remove(_id: string) {
     // Implementation
     return { message: 'User removed' };
   }

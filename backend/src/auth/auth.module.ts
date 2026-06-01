@@ -9,7 +9,7 @@ import { AuthController } from './auth.controller';
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret-key',
-      signOptions: { expiresIn: process.env.JWT_EXPIRATION || '7d' },
+      signOptions: { expiresIn: process.env.JWT_EXPIRATION ? parseInt(process.env.JWT_EXPIRATION) : '7d' },
     }),
   ],
   providers: [AuthService],

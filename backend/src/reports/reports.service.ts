@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ReportsService {
-  constructor(private prisma: PrismaService) {}
+  // constructor(private _prisma: PrismaService) {}
 
-  create(createReportDto: any) {
+  create(_createReportDto: any) {
     // Implementation
     return { message: 'Report created' };
   }
@@ -15,7 +14,7 @@ export class ReportsService {
     return [];
   }
 
-  findOne(id: string) {
+  findOne(_id: string) {
     // Implementation
     return null;
   }

@@ -25,7 +25,6 @@ model User {
   
   // Relations
   reports    Report[]
-  rescues    Rescue[]
   volunteer  Volunteer?
   hospital   Hospital?
   
@@ -158,7 +157,7 @@ model Hospital {
   services    String[] // Array of services
   
   // Relations
-  managerId String
+  managerId String @unique
   manager   User     @relation(fields: [managerId], references: [id])
   rescues   Rescue[]
   
