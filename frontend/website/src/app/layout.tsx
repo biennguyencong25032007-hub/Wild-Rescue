@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import EmergencyBanner from '@/components/EmergencyBanner'
+import RootLayoutClient from './RootLayoutClient'
 
 export const metadata: Metadata = {
   title: {
@@ -39,10 +37,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className="scroll-smooth">
       <body className="min-h-screen bg-dark-950 text-dark-200 antialiased">
-        <Navbar />
-        <main className="relative">{children}</main>
-        <Footer />
-        <EmergencyBanner />
+        <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>
   )
